@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 bluez = "0.1.3"
 async-std = "1.6.3"
+rodio = "0.11.0"

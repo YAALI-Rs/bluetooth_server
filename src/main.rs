@@ -1,7 +1,11 @@
 use std::error::Error;
 use bluez::client::*;
+use std::path::Path;
+use std::fs::File;
+use rodio::Sink;
+use std::io::BufReader;
 
-// use async_std::prelude::*;
+mod bluetooth_comms;
 
 
 #[async_std::main]
@@ -36,4 +40,19 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+fn test_rodio() { 
+    let path = Path::new("public/wii_shop.mp3");
+    let file = File::open(path).unwrap();
+    let device = rodio::default_output_device().unwrap();
+
+    let sink = Sink::new(&device);
+    let source = rodio::Decoder::new(BufReader::new(file)).unwrap();
+
+    sink.append(source);
+
+    sink.play();
+
+    sink.sleep_until_end();
 }
