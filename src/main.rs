@@ -5,8 +5,7 @@ use std::fs::File;
 use rodio::Sink;
 use std::io::BufReader;
 
-mod bluetooth_comms;
-
+mod server;
 
 #[async_std::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
@@ -18,26 +17,16 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
         version.version, version.revision
     );
 
-    let controllers = client.get_ext_controller_list().await?;
+    let mut controllers = client.get_ext_controller_list().await?;
+
+    let main_controller = controllers.remove(0);
 
     println!("\navailable controllers:");
 
-    for (controller, controller_type, controller_bus) in controllers {
-        println!(
-            "\t{:?} ({:?}, {:?})",
-            controller, controller_type, controller_bus
-        );
-        let info = client.get_controller_info(controller).await?;
+    let features = client.get_advertising_features(main_controller.0).await?;
 
-        println!("\t\tname: {:?}", info.name);
-        println!("\t\tshort name: {:?}", info.short_name);
-        println!("\t\taddress: {}", info.address);
-        println!("\t\tsupported settings: {:?}", info.supported_settings);
-        println!("\t\tcurrent settings: {:?}", info.current_settings);
-        println!("\t\tmanufacturer: 0x{:04x}", info.manufacturer);
-        println!("\t\tbluetooth version: 0x{:02x}", info.bluetooth_version);
-        println!("\t\tclass of device: {:?}", info.class_of_device);
-    }
+    println!("supported flags: {:?}", features.supported_flags);
+    println!("{}", main_controller.0);
 
     Ok(())
 }
